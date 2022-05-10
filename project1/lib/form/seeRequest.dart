@@ -4,17 +4,23 @@ import 'package:flutter/material.dart';
 import 'package:project1/form/acceptBook.dart';
 import 'package:project1/form/acceptClothes.dart';
 import 'package:project1/form/acceptFood.dart';
+import 'package:project1/form/marFormBook.dart';
+import 'package:project1/form/marFormClothes.dart';
+import 'package:project1/form/marFormFood.dart';
+import 'package:project1/form/seeRequestBook.dart';
+import 'package:project1/form/seeRequestClothes.dart';
+import 'package:project1/form/seeRequestFood.dart';
 import 'package:project1/pages/login_page.dart';
 import 'package:project1/pages/maintab.dart';
 
-class accept extends StatefulWidget {
-  const accept({Key? key}) : super(key: key);
+class seeRequest extends StatefulWidget {
+  const seeRequest({Key? key}) : super(key: key);
 
   @override
-  State<accept> createState() => _acceptState();
+  State<seeRequest> createState() => _seeRequestState();
 }
 
-class _acceptState extends State<accept> {
+class _seeRequestState extends State<seeRequest> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -51,9 +57,9 @@ class _acceptState extends State<accept> {
             body: TabBarView(
                 //controller:controller
                 children: [
-                  acceptFood(),
-                  acceptClothes(),
-                  acceptBook(),
+                  seeRequestFood(),
+                  seeRequestClothes(),
+                  seeRequestBook(),
                 ])));
   }
 }

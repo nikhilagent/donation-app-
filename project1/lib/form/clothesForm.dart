@@ -4,7 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:project1/assets/tshirticon_icon.dart';
 import 'package:project1/pages/buttons.dart';
 
@@ -21,20 +23,35 @@ class _clothesFormState extends State<clothesForm> {
       FirebaseFirestore.instance.collection('clothes');
   TextEditingController _desccontroller = TextEditingController();
   TextEditingController _qtycontroller = TextEditingController();
-  TextEditingController _addcontroller = TextEditingController();
-  TextEditingController _pincontroller = TextEditingController();
+  TextEditingController _latcontroller = TextEditingController();
+  TextEditingController _longcontroller = TextEditingController();
   TextEditingController _nicknamecontroller = TextEditingController();
   TextEditingController _phonenumbercontroller = TextEditingController();
   var desc = '';
   var qty = '';
-  var add = '';
-  var pin = '';
+  var lat = '';
+  var long = '';
   var nickname = '';
   var phno = '';
   File? _image;
   String? downloadURL;
   final imagePicker = ImagePicker();
   var _formkey = GlobalKey<FormState>();
+
+  void getCurrentLocation() async {
+    var position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    var lastPosition = await Geolocator.getLastKnownPosition();
+
+    setState(() {
+      lat = "${position.latitude}";
+      long = "${position.longitude}";
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Got Your current Location ',
+              style: TextStyle(fontSize: 18.0))));
+    });
+  }
+
   imagepicker() async {
     final pick = await imagePicker.pickImage(source: ImageSource.gallery);
     setState(() {
@@ -55,8 +72,8 @@ class _clothesFormState extends State<clothesForm> {
           'Phone no': phno,
           'Description': desc,
           'Quantity': qty,
-          'Address': add,
-          'Pincode': pin,
+          'Latitude': lat,
+          'Longitude': long,
           'Image': downloadURL
         })
         .then((value) => print('Value Added'))
@@ -65,10 +82,10 @@ class _clothesFormState extends State<clothesForm> {
 
 //uploading the image to firebase storage
   uploadImage() async {
-    Reference ref = FirebaseStorage.instance.ref().child('images');
+    final id = DateTime.now().toString();
+    Reference ref = FirebaseStorage.instance.ref().child('${id}/images');
     await ref.putFile(_image!);
     downloadURL = await ref.getDownloadURL();
-    //print(downloadURL);
   }
 
   @override
@@ -196,7 +213,7 @@ class _clothesFormState extends State<clothesForm> {
                 },
               )),
               SizedBox(height: 20.0),
-              Text('Address:', style: TextStyle(fontSize: 20.0)),
+              /*Text('Address:', style: TextStyle(fontSize: 20.0)),
               Container(
                   child: TextFormField(
                 controller: _addcontroller,
@@ -243,7 +260,7 @@ class _clothesFormState extends State<clothesForm> {
                   return null;
                 },
               )),
-              SizedBox(height: 10.0),
+              SizedBox(height: 10.0),*/
               Center(
                 child: Text('Upload image'),
               ),
@@ -310,6 +327,24 @@ class _clothesFormState extends State<clothesForm> {
                       },
                       child: Text('Upoald Photo'))),
               Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.0,
+                    vertical: 0.5,
+                  ),
+                  child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20.0)),
+                      ),
+                      onPressed: () async {
+                        final status = await Permission.location.request();
+                        if (status.isGranted) {
+                          getCurrentLocation();
+                        } else
+                          print('Access denied');
+                      },
+                      child: Text('location'))),
+              Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: 10.0,
                   vertical: 10,
@@ -324,8 +359,8 @@ class _clothesFormState extends State<clothesForm> {
                       print('phonenumber = ' + _phonenumbercontroller.text);
                       print('Descrption ' + _desccontroller.text);
                       print('Qantity ' + _qtycontroller.text);
-                      print('Address ' + _addcontroller.text);
-                      print('Pin code ' + _pincontroller.text);
+                      print('Address ' + _latcontroller.text);
+                      print('Pin code ' + _longcontroller.text);
                       print(downloadURL);
                       if (_formkey.currentState!.validate())
                         setState(() {
@@ -333,9 +368,10 @@ class _clothesFormState extends State<clothesForm> {
                           phno = _phonenumbercontroller.text;
                           desc = _desccontroller.text;
                           qty = _qtycontroller.text;
-                          add = _addcontroller.text;
-                          pin = _pincontroller.text;
                           adddata();
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text('Donation Completed',
+                                  style: TextStyle(fontSize: 18.0))));
                         });
                     },
                     child: Text('DONATE')),

@@ -13,23 +13,21 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:project1/form/accept.dart';
 import 'package:project1/form/acceptFoodLoc.dart';
 import 'package:project1/form/googleMapAPI.dart';
-import 'package:project1/form/googleMaps.dart';
 
-class acceptFood extends StatefulWidget {
-  const acceptFood({Key? key}) : super(key: key);
+class seeRequestFood extends StatefulWidget {
+  const seeRequestFood({Key? key}) : super(key: key);
 
   @override
-  State<acceptFood> createState() => _acceptFoodState();
+  State<seeRequestFood> createState() => _seeRequestFoodState();
 }
 
-class _acceptFoodState extends State<acceptFood> {
-  final Stream<QuerySnapshot> food =
-      FirebaseFirestore.instance.collection('food').snapshots();
+class _seeRequestFoodState extends State<seeRequestFood> {
+  final Stream<QuerySnapshot> marfood =
+      FirebaseFirestore.instance.collection('marfood').snapshots();
   double lat2 = 0.0;
   double long2 = 0.0;
-
   /*downloading script started */
-  int progress = 0;
+  /*int progress = 0;
   ReceivePort _receivePort = ReceivePort();
   static downloadingCallback(id, status, progress) {
     ///looking up for the send port
@@ -55,19 +53,19 @@ class _acceptFoodState extends State<acceptFood> {
     });
     FlutterDownloader.registerCallback(downloadingCallback);
   }
-
+*/
 /*downloading script ended */
   void getCurrentLocation() async {
     var position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
     var lastPosition = await Geolocator.getLastKnownPosition();
-    print(lastPosition);
+
     setState(() {
       lat2 = position.latitude;
       long2 = position.longitude;
-      print('** lat2: ${lat2}');
+      print('lat2');
       print(lat2);
-      print('** long2 ${long2}');
+      print('long2');
       print(long2);
     });
   }
@@ -75,7 +73,7 @@ class _acceptFoodState extends State<acceptFood> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-        stream: food,
+        stream: marfood,
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasError) print('Something Went Wrong');
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -98,7 +96,7 @@ class _acceptFoodState extends State<acceptFood> {
               Container(
                 margin: EdgeInsets.fromLTRB(0, 5, 0, 0),
                 padding: EdgeInsets.symmetric(vertical: 10),
-                height: 500,
+                height: 160,
                 width: 300,
                 decoration: BoxDecoration(
                     borderRadius:
@@ -108,7 +106,7 @@ class _acceptFoodState extends State<acceptFood> {
                 child: Column(
                   children: [
                     Text(
-                      'Name : ${data.docs[i]['Name']}',
+                      'Name : ${data.docs[i]['Type']}',
                       style: TextStyle(fontSize: 20, color: Colors.white),
                     ),
                     Text(
@@ -123,10 +121,11 @@ class _acceptFoodState extends State<acceptFood> {
                       'Quantity : ${data.docs[i]['Quantity']}',
                       style: TextStyle(fontSize: 20, color: Colors.white),
                     ),
-                    Expanded(
-                      child: Image.network(data.docs[i]['Image'].toString()),
-                    ),
                     Text(
+                      'Phone Number: ${data.docs[i]['Phone no']}',
+                      style: TextStyle(fontSize: 20, color: Colors.white),
+                    ),
+                    /*Text(
                       'Download Image : ',
                       style: TextStyle(fontSize: 20, color: Colors.white),
                     ),
@@ -162,14 +161,17 @@ class _acceptFoodState extends State<acceptFood> {
                               primary: Color.fromARGB(255, 97, 76, 175))),
                     ),
                     /*^^^^^^^^^^^^download script 2nd part ended */
+                    */
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 100),
                       child: ElevatedButton(
                         onPressed: () async {
                           lat1 = double.parse(data.docs[i]['Latitude']);
                           long1 = double.parse(data.docs[i]['Longitude']);
-                          print('** lat1: ${lat1}');
-                          print('** long1: ${long1}');
+                          print('lat1');
+                          print(lat1);
+                          print('long1');
+                          print(long1);
                           print("clicked");
                           final status = await Permission.location.request();
                           if (status.isGranted) {
@@ -180,7 +182,7 @@ class _acceptFoodState extends State<acceptFood> {
                           var position = await Geolocator.getCurrentPosition(
                               desiredAccuracy: LocationAccuracy.high);
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => googleMaps(
+                              builder: (context) => googleMapAPI(
                                     lat1: lat1,
                                     long1: long1,
                                     lat2: position.latitude,

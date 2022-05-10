@@ -4,7 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:project1/pages/buttons.dart';
 
 class foodForm extends StatefulWidget {
@@ -20,20 +22,34 @@ class _foodFormState extends State<foodForm> {
   CollectionReference food = FirebaseFirestore.instance.collection('food');
   TextEditingController _desccontroller = TextEditingController();
   TextEditingController _qtycontroller = TextEditingController();
-  TextEditingController _addcontroller = TextEditingController();
-  TextEditingController _pincontroller = TextEditingController();
+  TextEditingController _latcontroller = TextEditingController();
+  TextEditingController _longcontroller = TextEditingController();
   TextEditingController _nicknamecontroller = TextEditingController();
   TextEditingController _phonenumbercontroller = TextEditingController();
   var desc = '';
   var qty = '';
-  var add = '';
-  var pin = '';
+  var lat = ''; //add
+  var long = ''; //qty
   var nickname = '';
   var phno = '';
   File? _image;
   String? downloadURL;
   final imagePicker = ImagePicker();
   var _formkey = GlobalKey<FormState>();
+  void getCurrentLocation() async {
+    var position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    var lastPosition = await Geolocator.getLastKnownPosition();
+
+    setState(() {
+      lat = "${position.latitude}";
+      long = "${position.longitude}";
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content:
+              Text('Got Your Location ', style: TextStyle(fontSize: 18.0))));
+    });
+  }
+
   /*selectFile() async {
     final result = await FilePicker.platform.pickFiles(allowMultiple: false);
     if (result == null) {
@@ -67,8 +83,8 @@ class _foodFormState extends State<foodForm> {
           'Phone no': phno,
           'Description': desc,
           'Quantity': qty,
-          'Address': add,
-          'Pincode': pin,
+          'Latitude': lat,
+          'Longitude': long,
           'Image': downloadURL
         })
         .then((value) => print('Value Added'))
@@ -77,7 +93,8 @@ class _foodFormState extends State<foodForm> {
 
 //uploading the image to firebase storage
   uploadImage() async {
-    Reference ref = FirebaseStorage.instance.ref().child('images');
+    final id = DateTime.now().toString();
+    Reference ref = FirebaseStorage.instance.ref().child('${id}/images');
     await ref.putFile(_image!);
     downloadURL = await ref.getDownloadURL();
     print(downloadURL);
@@ -202,7 +219,7 @@ class _foodFormState extends State<foodForm> {
                 },
               )),
               SizedBox(height: 20.0),
-              Text('Address:', style: TextStyle(fontSize: 20.0)),
+              /*Text('Address:', style: TextStyle(fontSize: 20.0)),
               Container(
                   child: TextFormField(
                 controller: _addcontroller,
@@ -248,7 +265,7 @@ class _foodFormState extends State<foodForm> {
                   else if (value.length != 6) return 'Enter correct pin code';
                   return null;
                 },
-              )),
+              )),*/
               SizedBox(height: 10.0),
               Center(
                 child: Text('Upload image'),
@@ -316,6 +333,24 @@ class _foodFormState extends State<foodForm> {
                       },
                       child: Text('Upoald Photo'))),
               Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.0,
+                    vertical: 0.5,
+                  ),
+                  child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20.0)),
+                      ),
+                      onPressed: () async {
+                        final status = await Permission.location.request();
+                        if (status.isGranted) {
+                          getCurrentLocation();
+                        } else
+                          print('Access denied');
+                      },
+                      child: Text('location'))),
+              Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: 10.0,
                   vertical: 10,
@@ -330,8 +365,8 @@ class _foodFormState extends State<foodForm> {
                       print('phonenumber = ' + _phonenumbercontroller.text);
                       print('Descrption ' + _desccontroller.text);
                       print('Qantity ' + _qtycontroller.text);
-                      print('Address ' + _addcontroller.text);
-                      print('Pin code ' + _pincontroller.text);
+                      print('Address ' + _latcontroller.text);
+                      print('Pin code ' + _longcontroller.text);
                       print(downloadURL);
                       if (_formkey.currentState!.validate())
                         setState(() {
@@ -339,9 +374,10 @@ class _foodFormState extends State<foodForm> {
                           phno = _phonenumbercontroller.text;
                           desc = _desccontroller.text;
                           qty = _qtycontroller.text;
-                          add = _addcontroller.text;
-                          pin = _pincontroller.text;
                           adddata();
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text('Donation Completed',
+                                  style: TextStyle(fontSize: 18.0))));
                         });
                     },
                     child: Text('DONATE')),

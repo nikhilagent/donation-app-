@@ -15,19 +15,20 @@ import 'package:project1/form/acceptFoodLoc.dart';
 import 'package:project1/form/googleMapAPI.dart';
 import 'package:project1/form/googleMaps.dart';
 
-class acceptFood extends StatefulWidget {
-  const acceptFood({Key? key}) : super(key: key);
+class acceptBook extends StatefulWidget {
+  const acceptBook({Key? key}) : super(key: key);
 
   @override
-  State<acceptFood> createState() => _acceptFoodState();
+  State<acceptBook> createState() => _acceptBookState();
 }
 
-class _acceptFoodState extends State<acceptFood> {
-  final Stream<QuerySnapshot> food =
-      FirebaseFirestore.instance.collection('food').snapshots();
-  double lat2 = 0.0;
-  double long2 = 0.0;
-
+class _acceptBookState extends State<acceptBook> {
+  var lat1;
+  var long1;
+  double lat2 = 0;
+  double long2 = 0;
+  final Stream<QuerySnapshot> book =
+      FirebaseFirestore.instance.collection('book').snapshots();
   /*downloading script started */
   int progress = 0;
   ReceivePort _receivePort = ReceivePort();
@@ -61,13 +62,13 @@ class _acceptFoodState extends State<acceptFood> {
     var position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
     var lastPosition = await Geolocator.getLastKnownPosition();
-    print(lastPosition);
+
     setState(() {
       lat2 = position.latitude;
       long2 = position.longitude;
-      print('** lat2: ${lat2}');
+      print('lat2');
       print(lat2);
-      print('** long2 ${long2}');
+      print('long2');
       print(long2);
     });
   }
@@ -75,7 +76,7 @@ class _acceptFoodState extends State<acceptFood> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-        stream: food,
+        stream: book,
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasError) print('Something Went Wrong');
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -89,8 +90,6 @@ class _acceptFoodState extends State<acceptFood> {
             Map a = document.data() as Map<String, dynamic>;
             storedocs.add(a);
           }).toList();
-          var lat1;
-          var long1;
           return Scaffold(
               //------------------------------------------------first list view
               body: ListView(children: [
@@ -141,7 +140,6 @@ class _acceptFoodState extends State<acceptFood> {
                       child: ElevatedButton(
                           onPressed: () async {
                             final status = await Permission.storage.request();
-
                             final externalDir =
                                 await getExternalStorageDirectory();
 
@@ -166,10 +164,13 @@ class _acceptFoodState extends State<acceptFood> {
                       padding: EdgeInsets.symmetric(horizontal: 100),
                       child: ElevatedButton(
                         onPressed: () async {
+                          print("clicked");
                           lat1 = double.parse(data.docs[i]['Latitude']);
                           long1 = double.parse(data.docs[i]['Longitude']);
-                          print('** lat1: ${lat1}');
-                          print('** long1: ${long1}');
+                          print('lat1');
+                          print(lat1);
+                          print('long1');
+                          print(long1);
                           print("clicked");
                           final status = await Permission.location.request();
                           if (status.isGranted) {
@@ -180,7 +181,7 @@ class _acceptFoodState extends State<acceptFood> {
                           var position = await Geolocator.getCurrentPosition(
                               desiredAccuracy: LocationAccuracy.high);
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => googleMaps(
+                              builder: (context) => googleMapAPI(
                                     lat1: lat1,
                                     long1: long1,
                                     lat2: position.latitude,
