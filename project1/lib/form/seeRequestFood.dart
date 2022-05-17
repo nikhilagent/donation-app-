@@ -11,8 +11,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:project1/form/accept.dart';
-import 'package:project1/form/acceptFoodLoc.dart';
 import 'package:project1/form/googleMapAPI.dart';
+import 'package:project1/form/seeDetailsFood.dart';
 
 class seeRequestFood extends StatefulWidget {
   const seeRequestFood({Key? key}) : super(key: key);
@@ -70,6 +70,16 @@ class _seeRequestFoodState extends State<seeRequestFood> {
     });
   }
 
+  CollectionReference marfood1 =
+      FirebaseFirestore.instance.collection('marfood');
+  Future<void> deleteUserId(id) {
+    return marfood1
+        .doc(id)
+        .delete()
+        .then((value) => print('user deleted'))
+        .catchError((error) => print('fail to delete the user:${error}'));
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
@@ -85,6 +95,7 @@ class _seeRequestFoodState extends State<seeRequestFood> {
           final List storedocs = [];
           snapshot.data!.docs.map((DocumentSnapshot document) {
             Map a = document.data() as Map<String, dynamic>;
+            a['id'] = document.id;
             storedocs.add(a);
           }).toList();
           var lat1;
@@ -106,7 +117,11 @@ class _seeRequestFoodState extends State<seeRequestFood> {
                 child: Column(
                   children: [
                     Text(
-                      'Name : ${data.docs[i]['Type']}',
+                      'Name : ${data.docs[i]['Name']}',
+                      style: TextStyle(fontSize: 20, color: Colors.white),
+                    ),
+                    Text(
+                      'Type : ${data.docs[i]['Type']}',
                       style: TextStyle(fontSize: 20, color: Colors.white),
                     ),
                     Text(
@@ -121,10 +136,10 @@ class _seeRequestFoodState extends State<seeRequestFood> {
                       'Quantity : ${data.docs[i]['Quantity']}',
                       style: TextStyle(fontSize: 20, color: Colors.white),
                     ),
-                    Text(
+                    /*Text(
                       'Phone Number: ${data.docs[i]['Phone no']}',
                       style: TextStyle(fontSize: 20, color: Colors.white),
-                    ),
+                    ),*/
                     /*Text(
                       'Download Image : ',
                       style: TextStyle(fontSize: 20, color: Colors.white),
@@ -182,12 +197,17 @@ class _seeRequestFoodState extends State<seeRequestFood> {
                           var position = await Geolocator.getCurrentPosition(
                               desiredAccuracy: LocationAccuracy.high);
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => googleMapAPI(
+                              builder: (context) => seeDetailsFood(
+                                    i: i,
+                                    id: storedocs[i]['id'],
+                                    name: storedocs[i]['Name'],
+                                    phone: storedocs[i]['Phone no'],
                                     lat1: lat1,
                                     long1: long1,
                                     lat2: position.latitude,
                                     long2: position.longitude,
                                   )));
+                          deleteUserId(storedocs[i]['id']);
                         },
                         child: Text('Accept'),
                         style: ElevatedButton.styleFrom(

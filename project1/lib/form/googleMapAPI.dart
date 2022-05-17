@@ -9,7 +9,6 @@ import 'package:project1/form/accept.dart';
 import 'package:project1/form/acceptBook.dart';
 import 'package:project1/form/acceptClothes.dart';
 import 'package:project1/form/acceptFood.dart';
-import 'package:project1/form/acceptFoodLoc.dart';
 import 'package:project1/pages/login_page.dart';
 import 'package:project1/pages/maintab.dart';
 import 'dart:async';
@@ -76,7 +75,7 @@ class _googleMapAPIState extends State<googleMapAPI> {
               Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => accept(),
+                    builder: (context) => MainTab(),
                   ),
                   ((route) => false));
             }),

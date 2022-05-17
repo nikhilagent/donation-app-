@@ -11,8 +11,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:project1/form/accept.dart';
-import 'package:project1/form/acceptFoodLoc.dart';
 import 'package:project1/form/googleMapAPI.dart';
+import 'package:project1/form/seeDetailsClothes.dart';
 
 class seeRequestClothes extends StatefulWidget {
   const seeRequestClothes({Key? key}) : super(key: key);
@@ -70,6 +70,16 @@ class _seeRequestClothesState extends State<seeRequestClothes> {
     });
   }
 
+  CollectionReference marclothes1 =
+      FirebaseFirestore.instance.collection('marclothes');
+  Future<void> deleteUserId(id) {
+    return marclothes1
+        .doc(id)
+        .delete()
+        .then((value) => print('user deleted'))
+        .catchError((error) => print('fail to delete the user:${error}'));
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
@@ -85,6 +95,7 @@ class _seeRequestClothesState extends State<seeRequestClothes> {
           final List storedocs = [];
           snapshot.data!.docs.map((DocumentSnapshot document) {
             Map a = document.data() as Map<String, dynamic>;
+            a['id'] = document.id;
             storedocs.add(a);
           }).toList();
           var lat1;
@@ -182,12 +193,17 @@ class _seeRequestClothesState extends State<seeRequestClothes> {
                           var position = await Geolocator.getCurrentPosition(
                               desiredAccuracy: LocationAccuracy.high);
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => googleMapAPI(
+                              builder: (context) => seeDetailsClothes(
+                                    i: i,
+                                    id: storedocs[i]['id'],
+                                    name: storedocs[i]['Name'],
+                                    phone: storedocs[i]['Phone no'],
                                     lat1: lat1,
                                     long1: long1,
                                     lat2: position.latitude,
                                     long2: position.longitude,
                                   )));
+                          deleteUserId(storedocs[i]['id']);
                         },
                         child: Text('Accept'),
                         style: ElevatedButton.styleFrom(

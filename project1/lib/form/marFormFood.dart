@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:project1/form/marButton.dart';
 import 'package:project1/pages/buttons.dart';
 
 class marFormFood extends StatefulWidget {
@@ -18,10 +19,12 @@ class marFormFood extends StatefulWidget {
 class _marFormFoodState extends State<marFormFood> {
   CollectionReference marfood =
       FirebaseFirestore.instance.collection('marfood');
+  TextEditingController _namecontroller = TextEditingController();
   TextEditingController _languagecontroller = TextEditingController();
   TextEditingController _authorcontroller = TextEditingController();
   TextEditingController _nicknamecontroller = TextEditingController();
   TextEditingController _phonenumbercontroller = TextEditingController();
+  var name = '';
   var lang = '';
   var author = '';
   var lat = ''; //add
@@ -62,6 +65,7 @@ class _marFormFoodState extends State<marFormFood> {
   Future<void> adddata() {
     return marfood
         .add({
+          'Name': name,
           'Type': nickname,
           'Phone no': phno,
           'Quantity': lang,
@@ -94,7 +98,7 @@ class _marFormFoodState extends State<marFormFood> {
                   Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => buttons(),
+                        builder: (context) => marButton(),
                       ),
                       ((route) => false));
                 }),
@@ -111,6 +115,28 @@ class _marFormFoodState extends State<marFormFood> {
               */
               SizedBox(
                 height: 30.0,
+              ),
+              Container(
+                  child: TextFormField(
+                controller: _namecontroller,
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: 'Name',
+                    labelText: 'Name',
+                    prefixIcon: Icon(
+                      Icons.person,
+                      color: Colors.black,
+                    )),
+                validator: (value) {
+                  if (value == null || value.isEmpty)
+                    return 'Please Enter Name';
+                  if (!RegExp(r'^[a-z A-Z 0-9]+$').hasMatch(value))
+                    return 'Invalid Name format';
+                  return null;
+                },
+              )),
+              SizedBox(
+                height: 10,
               ),
               Container(
                   child: TextFormField(
@@ -230,6 +256,7 @@ class _marFormFoodState extends State<marFormFood> {
                           borderRadius: BorderRadius.circular(20.0)),
                     ),
                     onPressed: () {
+                      print('Name' + _namecontroller.text);
                       print('nick name' + _nicknamecontroller.text);
                       print('phonenumber = ' + _phonenumbercontroller.text);
                       print('Author ' + _authorcontroller.text);
@@ -237,12 +264,16 @@ class _marFormFoodState extends State<marFormFood> {
                       //print(downloadURL);
                       if (_formkey.currentState!.validate())
                         setState(() {
+                          name = _namecontroller.text;
                           nickname = _nicknamecontroller.text;
                           phno = _phonenumbercontroller.text;
                           author = _authorcontroller.text;
                           lang = _languagecontroller.text;
                           adddata();
                         });
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('Request Completed ',
+                              style: TextStyle(fontSize: 18.0))));
                     },
                     child: Text('MAKE A REQUEST')),
               ),
